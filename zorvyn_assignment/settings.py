@@ -17,7 +17,7 @@ import os
 
 env = environ.Env()
 
-ENV_FILE = os.environ.get("DJANGO_ENV_FILE", ".env")
+ENV_FILE = os.environ.get("DJANGO_ENV_FILE", ".env.dev")
 print(f"Loading environment variables from: {ENV_FILE}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
