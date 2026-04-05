@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import environ
 import os
@@ -24,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 Path(LOG_DIR).mkdir(exist_ok=True)
-environ.Env.read_env(os.path.join(BASE_DIR, ENV_FILE))
+environ.Env.read_env(os.path.join(BASE_DIR.parent, ENV_FILE))
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,8 +39,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
-# Application definition
+AUTH_USER_MODEL = 'users.CustomUser'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -48,8 +48,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'django_filters',
+    'drf_spectacular',
+    'apps.users',
+    'apps.finance',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +101,36 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'common.exceptions.custom_exception_handler.custom_exception_handler',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.StandardResultsPagination',
+    'EXCEPTION_HANDLER': 'core.custom_exception_handler.custom_exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Zorvyn Finance Dashboard API',
+    'DESCRIPTION': 'Finance dashboard with role-based access control',
+    'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
+    'ENABLE_DJANGO_FILTER_DETECTION': True,
+    'ENUM_ADD_EXPLICIT_BLANK_NULL_CHOICE': False,
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 LOGGING = {
